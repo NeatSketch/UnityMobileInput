@@ -7,12 +7,17 @@
 package ru.mopsicus.mobileinput;
 
 import android.app.Activity;
+import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import ru.mopsicus.common.Common;
 import com.unity3d.player.UnityPlayer;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class Plugin {
@@ -83,9 +88,39 @@ public class Plugin {
     public static void execute(final int id, final String data) {
         activity.runOnUiThread(new Runnable() {
             public void run() {
-                MobileInput.processMessage(id, data);
+                if (id != -1) {
+                    MobileInput.processMessage(id, data);
+                } else {
+                    try {
+                        JSONObject json = new JSONObject(data);
+                        String msg = json.getString("msg");
+                        if (msg.equals("SET_CLIP_RECT")) {
+                            int left = json.getInt("left");
+                            int top = json.getInt("top");
+                            int right = json.getInt("right");
+                            int bottom = json.getInt("bottom");
+                            setClipRect(left, top, right, bottom);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
             }
         });
+    }
+
+    public static Rect clipRect = new Rect();
+
+    private static void setClipRect(int left, int top, int right, int bottom) {
+        clipRect.left = left;
+        clipRect.top = top;
+        clipRect.right = right;
+        clipRect.bottom = bottom;
+
+        layout.setPadding(left, top, right, bottom);
+
+        MobileInput.updatePositions();
     }
 
 }

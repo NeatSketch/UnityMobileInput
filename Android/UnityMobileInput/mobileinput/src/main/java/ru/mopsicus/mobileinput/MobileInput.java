@@ -48,10 +48,30 @@ public class MobileInput {
     private int characterLimit;
     private static SparseArray<MobileInput> mobileInputList = null;
 
+    private int posX;
+    private int posY;
+    private int rectRight;
+    private int rectBottom;
+
     // Constructor
     private MobileInput(RelativeLayout parentLayout) {
         layout = parentLayout;
         edit = null;
+    }
+
+    public static void updatePositions() {
+        if (mobileInputList != null) {
+            for (int i = 0; i < mobileInputList.size(); i++) {
+                mobileInputList.valueAt(i).updatePosition();
+            }
+        }
+    }
+
+    private void updatePosition() {
+        Rect rect = new Rect(posX - Plugin.clipRect.left, posY - Plugin.clipRect.top, rectRight - Plugin.clipRect.left, rectBottom - Plugin.clipRect.top);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(rect.width(), rect.height());
+        params.setMargins(rect.left, rect.top, 0, 0);
+        edit.setLayoutParams(params);
     }
 
     // Handler to process all messages for MobileInput
@@ -145,7 +165,11 @@ public class MobileInput {
             edit.setId(this.id);
             edit.setText("");
             edit.setHint(placeHolder);
-            Rect rect = new Rect((int) x, (int) y, (int) (x + width), (int) (y + height));
+            posX = (int) x;
+            posY = (int) y;
+            rectRight = (int) (x + width);
+            rectBottom = (int) (y + height);
+            Rect rect = new Rect(posX - Plugin.clipRect.left, posY - Plugin.clipRect.top, rectRight - Plugin.clipRect.left, rectBottom - Plugin.clipRect.top);
             LayoutParams params = new LayoutParams(rect.width(), rect.height());
             params.setMargins(rect.left, rect.top, 0, 0);
             edit.setLayoutParams(params);
@@ -153,7 +177,7 @@ public class MobileInput {
             int editInputType = 0;
             switch (contentType) {
                 case "Standard":
-                    editInputType |= InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
+                    editInputType |= InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
                     break; // This is default behaviour
                 case "Autocorrected":
                     editInputType |= InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
@@ -209,7 +233,7 @@ public class MobileInput {
                             editInputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED;;
                             break;
                         default:
-                            editInputType = InputType.TYPE_CLASS_TEXT;
+                            editInputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
                             break;
                     }
                     switch (inputType) {
@@ -277,7 +301,7 @@ public class MobileInput {
             edit.setGravity(gravity);
             edit.setTextSize(TypedValue.COMPLEX_UNIT_PX, (float) fontSize);
             edit.setTextColor(Color.argb(textColor_a, textColor_r, textColor_g, textColor_b));
-            edit.setBackgroundColor(Color.argb(backColor_a, backColor_r, backColor_g, backColor_b));
+            edit.setBackgroundColor(Color.TRANSPARENT /*Color.argb(backColor_a, backColor_r, backColor_g, backColor_b)*/);
             edit.setHintTextColor(Color.argb(placeHolderColor_a, placeHolderColor_r, placeHolderColor_g, placeHolderColor_b));
             edit.setTypeface(Typeface.SANS_SERIF);
             final MobileInput input = this;
@@ -416,7 +440,11 @@ public class MobileInput {
             double y = data.getDouble("y") * (double) layout.getHeight();
             double width = data.getDouble("width") * (double) layout.getWidth();
             double height = data.getDouble("height") * (double) layout.getHeight();
-            Rect rect = new Rect((int) x, (int) y, (int) (x + width), (int) (y + height));
+            posX = (int) x;
+            posY = (int) y;
+            rectRight = (int) (x + width);
+            rectBottom = (int) (y + height);
+            Rect rect = new Rect(posX - Plugin.clipRect.left, posY - Plugin.clipRect.top, rectRight - Plugin.clipRect.left, rectBottom - Plugin.clipRect.top);
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(rect.width(), rect.height());
             params.setMargins(rect.left, rect.top, 0, 0);
             edit.setLayoutParams(params);
